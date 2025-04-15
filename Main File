@@ -5,6 +5,8 @@ function setup() {
 
 var player_HP = 100
 var player_max_HP = 100
+var player_MANA = 50
+var player_max_MANA = 100
 var foe_HP = 200
 var foe_max_HP = 200
 var foe_turn = false
@@ -14,6 +16,8 @@ var player_block = false
 
 var player_hb_x = 400
 var player_hb_x_target = 400
+var player_mb_x_max = 400
+var player_mb_x = 200
 var foe_hb_x = 500
 var foe_hb_x_target = 500
 
@@ -42,10 +46,10 @@ function draw() {
   fill(255, 0, 0);
   rect(50, 25, 500, 30); //Foe HP bar
   rect(100, 300, 400, 30); //Player HP bar
-  fill(52, 183, 235);
   rect(100, 330, 400, 30); //Player MANA bar
   update_player_HP();
   update_foe_HP();
+  update_player_MANA();
   if((player_hb_x == player_hb_x_target) && (foe_hb_x == foe_hb_x_target) && (!foe_turn)){
     attack_button();
     block_button();
@@ -59,13 +63,13 @@ function draw() {
     if(mouseIsPressed) {
       if(mouseX > blo_but_x && mouseX < blo_but_x + blo_but_w && 
          mouseY > blo_but_y && mouseY < blo_but_y + blo_but_h){
-          press_atk();
+          press_blo();
       }
     }
     if(mouseIsPressed) {
       if(mouseX > ex_atk_but_x && mouseX < ex_atk_but_x + ex_atk_but_w && 
          mouseY > ex_atk_but_y && mouseY < ex_atk_but_y + ex_atk_but_h){
-          press_atk();
+          press_ex_atk();
       }
     }
   }
@@ -126,6 +130,38 @@ function update_player_HP(){
     player_hb_x = player_hb_x_target;
   }
   rect(100, 300, player_hb_x, 30); //Player HP bar
+}
+
+  
+  
+//Player MANA
+function player_change_MA(amount){
+  if(amount > 0){
+    if(player_MANA < amount){
+      return false
+    }
+  }
+  console.log('MANA Amount ' + amount);
+  player_MANA -= amount;
+  if(player_MANA > player_max_MANA){
+    player_MANA = player_max_MANA;
+  }
+  console.log('Player MANA ' + player_MANA);
+  let MANA_percentage = (player_MANA / player_max_MANA);
+  console.log('MANA_percentage ' + MANA_percentage);
+  player_mb_x = ((player_mb_x_max - 100) * MANA_percentage);
+  if(MANA_percentage != 0){
+    player_mb_x += 100;
+  }
+  console.log('player_mb_x ' + player_mb_x);
+
+  update_player_MANA();
+  return true
+}
+  
+function update_player_MANA(){
+  fill(52, 183, 235);
+  rect(100, 330, player_mb_x, 30); //Player MANA bar
 }
 
   
@@ -193,15 +229,20 @@ function update_foe_HP(){
   
 //Buttons
 function press_atk(){
-  foe_hurt(41);
+  foe_hurt(25);
 }
 
 function press_blo(){
-  foe_hurt(41);
+  player_change_MA(-30);
+  player_block = true;
+  foe_turn = true;
+  
 }
 
 function press_ex_atk(){
-  foe_hurt(41);
+  if(player_change_MA(5)){
+    foe_hurt(50);
+  }
 }
   
 function attack_button(){
