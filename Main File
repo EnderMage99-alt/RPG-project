@@ -9,17 +9,32 @@ var player_MANA = 50
 var player_max_MANA = 100
 var foe_HP = 200
 var foe_max_HP = 200
-var foe_turn = false
-var player_block = false
 
+var foe_thinking_counter = 0
+var block_counter = 0
+var block_delay = 120
+var textbox_last_message = "Combat is starting..."
 
+var block_active = false;
+var player_attacked = false;
+var hide_buttons = false;
+var foe_turn = false;
+var player_block = false;
+var player_won = false;
+var player_lost = false;
+var foe_charging = false;
+var foe_special = false;
 
 var player_hb_x = 400
 var player_hb_x_target = 400
+var player_hb_x_max = 400
+
 var player_mb_x_max = 400
 var player_mb_x = 200
+
 var foe_hb_x = 500
 var foe_hb_x_target = 500
+var foe_hb_x_max = 500
 
 var decrease_speed = 5
 
@@ -41,8 +56,24 @@ var ex_atk_but_y = 240
 var ex_atk_but_w = 75
 var ex_atk_but_h = 50
 
+let img;
+
+// Load the image.
+function preload() {
+  img = loadImage('https://static.vecteezy.com/system/resources/thumbnails/027/190/981/small_2x/pixel-art-monster-character-4-png.png');
+}
+
 function draw() {
   background(220);
+  if(player_won){
+    send_text_message("You have defeated the foe! You win!");
+    return
+     }
+  if(player_lost){
+    send_text_message("You have lost to the foe. You lose.");
+    return
+     }
+  image(img, 210, 90, 140, 140);
   fill(255, 0, 0);
   rect(50, 25, 500, 30); //Foe HP bar
   rect(100, 300, 400, 30); //Player HP bar
@@ -50,7 +81,28 @@ function draw() {
   update_player_HP();
   update_foe_HP();
   update_player_MANA();
-  if((player_hb_x == player_hb_x_target) && (foe_hb_x == foe_hb_x_target) && (!foe_turn)){
+  send_text_message(textbox_last_message);
+  if(block_active){
+      console.log('block_active is active');
+    block_counter++
+    if(block_counter >= block_delay){
+      block_active = false;
+      hide_buttons = false;
+      foe_turn = true;
+    }
+  }
+  
+  if(foe_turn){
+    if(foe_thinking_counter <= 180){
+      foe_thinking_counter++
+      send_text_message("The foe is pondering their next move...");
+    } else{
+      foe_take_action();
+    }
+    
+  }
+  
+  if(((player_hb_x == player_hb_x_target) && (foe_hb_x == foe_hb_x_target) && (!foe_turn)) && (!hide_buttons)){
     attack_button();
     block_button();
     ex_attack_button();
@@ -99,13 +151,13 @@ function player_hurt(amount){
   if(player_HP < 0){
     player_HP = 0;
   }
+  console.log('Player damage taken ' + amount);
   console.log('Player HP ' + player_HP);
   let HP_percentage = (player_HP / player_max_HP);
   console.log('HP_percentage = ' + HP_percentage);
-  player_hb_x_target = ((player_hb_x_target - 100) * HP_percentage);
-  if(HP_percentage != 0){
-    player_hb_x_target += 100;
-  }    
+  player_hb_x_target = (player_hb_x_max * HP_percentage);
+  console.log('player_hb_x_target = ' + player_hb_x_target);
+    
   update_player_HP();
 }
 
@@ -126,13 +178,15 @@ function update_player_HP(){
        decrease_speed = 3;
      }
   
-  if(abs(player_hb_x_target - player_hb_x) < 1){
+  if(abs(player_hb_x_target - player_hb_x) <= 1){
     player_hb_x = player_hb_x_target;
   }
+  if(player_hb_x == 0){
+    player_lost = true;
+  }
+  
   rect(100, 300, player_hb_x, 30); //Player HP bar
 }
-
-  
   
 //Player MANA
 function player_change_MA(amount){
@@ -149,10 +203,7 @@ function player_change_MA(amount){
   console.log('Player MANA ' + player_MANA);
   let MANA_percentage = (player_MANA / player_max_MANA);
   console.log('MANA_percentage ' + MANA_percentage);
-  player_mb_x = ((player_mb_x_max - 100) * MANA_percentage);
-  if(MANA_percentage != 0){
-    player_mb_x += 100;
-  }
+  player_mb_x = (player_mb_x_max * MANA_percentage);
   console.log('player_mb_x ' + player_mb_x);
 
   update_player_MANA();
@@ -164,6 +215,20 @@ function update_player_MANA(){
   rect(100, 330, player_mb_x, 30); //Player MANA bar
 }
 
+function send_text_message(textmessage = null){
+  fill(0, 0, 0);
+  textSize(20);
+  if(textmessage){
+    textbox_last_message = textmessage    
+  }
+  text(textbox_last_message, 140, 80);
+}
+  
+  
+  
+  
+  
+  
   
   
   
@@ -188,10 +253,8 @@ function foe_hurt(amount){
   console.log('Foe HP ' + foe_HP);
   let HP_percentage = (foe_HP / foe_max_HP);
   console.log('HP_percentage = ' + HP_percentage);
-  foe_hb_x_target = ((foe_hb_x_target - 50) * HP_percentage);
-  if(HP_percentage != 0){
-    foe_hb_x_target += 50;
-  }
+  foe_hb_x_target = (foe_hb_x_max * HP_percentage);
+  console.log('foe_hb_x_target = ' + foe_hb_x_target);
     
   update_foe_HP();
 }
@@ -213,14 +276,53 @@ function update_foe_HP(){
        decrease_speed = 3;
      }
   
-  if(abs(foe_hb_x_target - foe_hb_x) < 1){
+  if(abs(foe_hb_x_target - foe_hb_x) <= 1){
     foe_hb_x = foe_hb_x_target;
+    if(player_attacked){
+      foe_turn = true;
+      player_attacked = false;
+    }
+
   }
   
   rect(50, 25, foe_hb_x, 30); //Foe HP bar
+  if(foe_hb_x == 0){
+    player_won = true;
+  }
+}
+  
+function foe_take_action(){
+  if(foe_charging){
+    if(player_block){
+      player_hurt(round(random(5, 8))); 
+      send_text_message("The foe is misses their special attack!")
+    } else {
+      player_hurt(round(random(50, 60)));
+      send_text_message("The foe lands their special attack!")
+    }
+    foe_charging = false;    
+  } else {
+    let picked_action = random(1, 100);  
+    if(picked_action > 40){
+      if(player_block){
+        player_hurt(round(random(7, 14))); 
+      } else {
+        player_hurt(round(random(16, 32)));
+      }
+      send_text_message("The foe attacks you!")
+    } else if(picked_action > 10){
+      foe_charging = true;
+      send_text_message("The foe is charging a special attack!")    
+    } else {
+      send_text_message("The foe forgets about their move!")
+    }
   }
 
-
+  foe_turn = false;
+  player_block = false;
+  hide_buttons = false;
+  foe_thinking_counter = 0;
+}
   
   
   
@@ -229,19 +331,28 @@ function update_foe_HP(){
   
 //Buttons
 function press_atk(){
-  foe_hurt(25);
+  foe_hurt(round(random(20, 30)));
+  hide_buttons = true;
+  player_attacked = true;
+  send_text_message("You attack the foe!");
 }
 
 function press_blo(){
   player_change_MA(-30);
+  send_text_message("You block the foes next attack!");
   player_block = true;
-  foe_turn = true;
-  
+  block_active = true;
+  hide_buttons = true;
 }
 
 function press_ex_atk(){
-  if(player_change_MA(5)){
-    foe_hurt(50);
+  if(player_change_MA(40)){
+    player_attacked = true;
+    hide_buttons = true;
+    foe_hurt(round(random(40, 60)));
+    send_text_message("You special attack the foe!");
+  } else {
+    send_text_message("You don't have enough MANA...");    
   }
 }
   
