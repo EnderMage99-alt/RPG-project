@@ -39,22 +39,35 @@ var foe_hb_x_max = 500
 var decrease_speed = 5
 
 var atk_but = true
-var atk_but_x = 150
+var atk_but_x = 100
 var atk_but_y = 240
 var atk_but_w = 75
 var atk_but_h = 50
 
 var blo_but = true
-var blo_but_x = 250
+var blo_but_x = 200
 var blo_but_y = 240
 var blo_but_w = 75
 var blo_but_h = 50
 
 var ex_atk_but = true
-var ex_atk_but_x = 350
+var ex_atk_but_x = 300
 var ex_atk_but_y = 240
 var ex_atk_but_w = 75
 var ex_atk_but_h = 50
+
+var heal_but = true
+var heal_but_x = 400
+var heal_but_y = 240
+var heal_but_w = 75
+var heal_but_h = 50
+
+
+var play_but = true
+var play_but_x = 200
+var play_but_y = 150
+var play_but_w = 200
+var play_but_h = 75
 
 let img;
 
@@ -67,10 +80,24 @@ function draw() {
   background(220);
   if(player_won){
     send_text_message("You have defeated the foe! You win!");
+    play_again();
+    if(mouseIsPressed) {
+      if(mouseX > play_but_x && mouseX < play_but_x + play_but_w && 
+         mouseY > play_but_y && mouseY < play_but_y + play_but_h){
+          restart_battle();
+      }
+    }
     return
      }
   if(player_lost){
     send_text_message("You have lost to the foe. You lose.");
+    play_again();
+    if(mouseIsPressed) {
+      if(mouseX > play_but_x && mouseX < play_but_x + play_but_w && 
+         mouseY > play_but_y && mouseY < play_but_y + play_but_h){
+          restart_battle();
+      }
+    }
     return
      }
   image(img, 210, 90, 140, 140);
@@ -106,6 +133,7 @@ function draw() {
     attack_button();
     block_button();
     ex_attack_button();
+    heal_button();
     if(mouseIsPressed) {
       if(mouseX > atk_but_x && mouseX < atk_but_x + atk_but_w && 
          mouseY > atk_but_y && mouseY < atk_but_y + atk_but_h){
@@ -122,6 +150,12 @@ function draw() {
       if(mouseX > ex_atk_but_x && mouseX < ex_atk_but_x + ex_atk_but_w && 
          mouseY > ex_atk_but_y && mouseY < ex_atk_but_y + ex_atk_but_h){
           press_ex_atk();
+      }
+    }
+    if(mouseIsPressed) {
+      if(mouseX > heal_but_x && mouseX < heal_but_x + heal_but_w && 
+         mouseY > heal_but_y && mouseY < heal_but_y + heal_but_h){
+          press_heal();
       }
     }
   }
@@ -221,7 +255,7 @@ function send_text_message(textmessage = null){
   if(textmessage){
     textbox_last_message = textmessage    
   }
-  text(textbox_last_message, 140, 80);
+  text(textbox_last_message, 140, 60, 400);
 }
   
   
@@ -293,7 +327,8 @@ function update_foe_HP(){
   
 function foe_take_action(){
   if(foe_charging){
-    if(player_block){
+    let MANA_percentage = (player_MANA / player_max_MANA);
+    if(MANA_percentage > 0.5){
       player_hurt(round(random(5, 8))); 
       send_text_message("The foe is misses their special attack!")
     } else {
@@ -312,7 +347,7 @@ function foe_take_action(){
       send_text_message("The foe attacks you!")
     } else if(picked_action > 10){
       foe_charging = true;
-      send_text_message("The foe is charging a special attack!")    
+      send_text_message("The foe is charging a special attack, It will hit if you have less then 50% MANA!")    
     } else {
       send_text_message("The foe forgets about their move!")
     }
@@ -355,6 +390,17 @@ function press_ex_atk(){
     send_text_message("You don't have enough MANA...");    
   }
 }
+
+function press_heal(){
+  if(player_change_MA(30)){
+    hide_buttons = true;
+    block_active = true;
+    player_hurt(round(random(-25, -35)));
+    send_text_message("You heal yourself!");
+  } else {
+    send_text_message("You don't have enough MANA...");    
+  }
+}
   
 function attack_button(){
   fill(247, 140, 126);
@@ -382,3 +428,45 @@ function ex_attack_button(){
   text('EX Attack', ex_atk_but_x + 5, ex_atk_but_y + 30);
   ex_atk_but = true
 }
+
+function heal_button(){
+  fill(66, 245, 147);
+  rect(heal_but_x, heal_but_y, heal_but_w, heal_but_h, 20);
+  fill(0, 0, 0);
+  textSize(18);
+  text('Heal', heal_but_x + 15, heal_but_y + 30);
+  heal_but = true
+}
+  
+function play_again(){
+  fill(231, 232, 146);
+  rect(play_but_x, play_but_y, play_but_w, play_but_h, 20);
+  fill(0, 0, 0);
+  textSize(22);
+  text('Play again?', play_but_x + 40, play_but_y + 45);
+  play_but = true
+}
+
+function restart_battle(){
+  console.log('RESTART BATTLE Button pressed');
+  player_won = false;
+  player_lost = false;
+  player_HP = player_max_HP
+  player_MANA = player_max_MANA/2
+  foe_HP = foe_max_HP
+  
+  player_hb_x = player_hb_x_max
+  player_hb_x_target = player_hb_x_max
+
+  foe_hb_x = foe_hb_x_max
+  foe_hb_x_target = foe_hb_x_max
+
+  player_mb_x = player_mb_x_max/2
+  foe_turn = false;
+  player_block = false;
+  hide_buttons = false;
+  foe_thinking_counter = 0;
+  send_text_message("Combat is starting...");
+}
+  
+//Fix OVER heal, block delay after using heal breaks
