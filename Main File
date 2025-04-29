@@ -70,10 +70,21 @@ var play_but_w = 200
 var play_but_h = 75
 
 let img;
+let bg_img;
+
+var img_counter = 0
+var img_delay = 60
+var img_y = 90
+var img_y_max = 92
+
+var hurt_counter = 255
+
 
 // Load the image.
 function preload() {
   img = loadImage('https://static.vecteezy.com/system/resources/thumbnails/027/190/981/small_2x/pixel-art-monster-character-4-png.png');
+
+  bg_img = loadImage('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTi0HqZvch4xcsnLF03GZW-Jin8nG8V9pza7g&s');
 }
 
 function draw() {
@@ -100,7 +111,24 @@ function draw() {
     }
     return
      }
-  image(img, 210, 90, 140, 140);
+  image(bg_img, 0, 0, 600, 400);
+  if(hurt_counter < 255){
+    tint(255, hurt_counter, hurt_counter);
+  } else {
+    tint(255, 255, 255, 255);
+  }
+  image(img, 210, img_y, 140, 140);
+  tint(255, 255, 255, 255);
+  img_counter++
+  if(img_counter >= img_delay){
+    img_counter = 0
+    if(img_y < img_y_max){
+      img_y +=2
+    } else {
+      img_y -=2
+    }
+    }
+    
   fill(255, 0, 0);
   rect(50, 25, 500, 30); //Foe HP bar
   rect(100, 300, 400, 30); //Player HP bar
@@ -113,6 +141,7 @@ function draw() {
       console.log('block_active is active');
     block_counter++
     if(block_counter >= block_delay){
+      block_counter = 0
       block_active = false;
       hide_buttons = false;
       foe_turn = true;
@@ -185,6 +214,11 @@ function player_hurt(amount){
   if(player_HP < 0){
     player_HP = 0;
   }
+
+  if(player_HP > player_max_HP){
+    player_HP = player_max_HP;
+  }
+    
   console.log('Player damage taken ' + amount);
   console.log('Player HP ' + player_HP);
   let HP_percentage = (player_HP / player_max_HP);
@@ -289,11 +323,16 @@ function foe_hurt(amount){
   console.log('HP_percentage = ' + HP_percentage);
   foe_hb_x_target = (foe_hb_x_max * HP_percentage);
   console.log('foe_hb_x_target = ' + foe_hb_x_target);
+  hurt_counter = 0;
     
   update_foe_HP();
 }
-
+  
 function update_foe_HP(){
+  if(hurt_counter < 255){
+     hurt_counter += 2;
+  }
+  
   fill(0, 255, 0);
   if(foe_hb_x != foe_hb_x_target){
     if(foe_hb_x > foe_hb_x_target){
@@ -328,7 +367,7 @@ function update_foe_HP(){
 function foe_take_action(){
   if(foe_charging){
     let MANA_percentage = (player_MANA / player_max_MANA);
-    if(MANA_percentage > 0.5){
+    if(MANA_percentage >= 0.5){
       player_hurt(round(random(5, 8))); 
       send_text_message("The foe is misses their special attack!")
     } else {
@@ -367,14 +406,15 @@ function foe_take_action(){
 //Buttons
 function press_atk(){
   foe_hurt(round(random(20, 30)));
+  player_change_MA(-10);
   hide_buttons = true;
   player_attacked = true;
-  send_text_message("You attack the foe!");
+  send_text_message("You attack the foe, and regain some MANA!");
 }
 
 function press_blo(){
   player_change_MA(-30);
-  send_text_message("You block the foes next attack!");
+  send_text_message("You block the foes next attack, and regain a lot of MANA!");
   player_block = true;
   block_active = true;
   hide_buttons = true;
@@ -465,6 +505,7 @@ function restart_battle(){
   foe_turn = false;
   player_block = false;
   hide_buttons = false;
+  hurt_counter = 255;
   foe_thinking_counter = 0;
   send_text_message("Combat is starting...");
 }
