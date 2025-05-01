@@ -2,6 +2,7 @@ function setup() {
   createCanvas(600, 400);
 }
 
+var scene = 3;
 
 var player_HP = 100
 var player_max_HP = 100
@@ -20,8 +21,6 @@ var player_attacked = false;
 var hide_buttons = false;
 var foe_turn = false;
 var player_block = false;
-var player_won = false;
-var player_lost = false;
 var foe_charging = false;
 var foe_special = false;
 
@@ -38,6 +37,7 @@ var foe_hb_x_max = 500
 
 var decrease_speed = 5
 
+//Combat Button Loc
 var atk_but = true
 var atk_but_x = 100
 var atk_but_y = 240
@@ -63,11 +63,36 @@ var heal_but_w = 75
 var heal_but_h = 50
 
 
+//Menu Button Locs
 var play_but = true
 var play_but_x = 200
 var play_but_y = 150
 var play_but_w = 200
 var play_but_h = 75
+
+var menu_but = true
+var menu_but_x = 200
+var menu_but_y = 240
+var menu_but_w = 200
+var menu_but_h = 75
+
+var easy_but = true
+var easy_but_x = 100
+var easy_but_y = 240
+var easy_but_w = 75
+var easy_but_h = 50
+
+var medium_but = true
+var medium_but_x = 200
+var medium_but_y = 240
+var medium_but_w = 75
+var medium_but_h = 50
+
+var hard_but = true
+var hard_but_x = 300
+var hard_but_y = 240
+var hard_but_w = 75
+var hard_but_h = 50
 
 let img;
 let bg_img;
@@ -89,7 +114,110 @@ function preload() {
 
 function draw() {
   background(220);
-  if(player_won){
+  if(scene == 0){
+      easy_button();
+      medium_button();
+      hard_button();
+      if(mouseIsPressed) {
+        if(mouseX > easy_but_x && mouseX < easy_but_x + easy_but_w && 
+           mouseY > easy_but_y && mouseY < easy_but_y + easy_but_h){
+            scene = 1;
+        }
+      }
+      if(mouseIsPressed) {
+        if(mouseX > hard_but_x && mouseX < hard_but_x + hard_but_w && 
+           mouseY > hard_but_y && mouseY < hard_but_y + hard_but_h){
+            scene = 1;
+        }
+      }
+      if(mouseIsPressed) {
+        if(mouseX > medium_but_x && mouseX < medium_but_x + medium_but_w && 
+           mouseY > medium_but_y && mouseY < medium_but_y + medium_but_h){
+            scene = 1;
+        }
+      }
+  }
+  if(scene == 1){
+    image(bg_img, 0, 0, 600, 400);
+    if(hurt_counter < 255){
+      tint(255, hurt_counter, hurt_counter);
+    } else {
+      tint(255, 255, 255, 255);
+    }
+    image(img, 210, img_y, 140, 140);
+    tint(255, 255, 255, 255);
+    img_counter++
+    if(img_counter >= img_delay){
+      img_counter = 0
+      if(img_y < img_y_max){
+        img_y +=2
+      } else {
+        img_y -=2
+      }
+      }
+
+    fill(255, 0, 0);
+    rect(50, 25, 500, 30); //Foe HP bar
+    rect(100, 300, 400, 30); //Player HP bar
+    rect(100, 330, 400, 30); //Player MANA bar
+    update_player_HP();
+    update_foe_HP();
+    update_player_MANA();
+    send_text_message(textbox_last_message);
+    if(block_active){
+        console.log('block_active is active');
+      block_counter++
+      if(block_counter >= block_delay){
+        block_counter = 0
+        block_active = false;
+        hide_buttons = false;
+        foe_turn = true;
+      }
+    }
+
+    if(foe_turn){
+      if(foe_thinking_counter <= 180){
+        foe_thinking_counter++
+        send_text_message("The foe is pondering their next move...");
+      } else{
+        foe_take_action();
+      }
+
+    }
+
+    if(((player_hb_x == player_hb_x_target) && (foe_hb_x == foe_hb_x_target) && (!foe_turn)) && (!hide_buttons)){
+      attack_button();
+      block_button();
+      ex_attack_button();
+      heal_button();
+      if(mouseIsPressed) {
+        if(mouseX > atk_but_x && mouseX < atk_but_x + atk_but_w && 
+           mouseY > atk_but_y && mouseY < atk_but_y + atk_but_h){
+            press_atk();
+        }
+      }
+      if(mouseIsPressed) {
+        if(mouseX > blo_but_x && mouseX < blo_but_x + blo_but_w && 
+           mouseY > blo_but_y && mouseY < blo_but_y + blo_but_h){
+            press_blo();
+        }
+      }
+      if(mouseIsPressed) {
+        if(mouseX > ex_atk_but_x && mouseX < ex_atk_but_x + ex_atk_but_w && 
+           mouseY > ex_atk_but_y && mouseY < ex_atk_but_y + ex_atk_but_h){
+            press_ex_atk();
+        }
+      }
+      if(mouseIsPressed) {
+        if(mouseX > heal_but_x && mouseX < heal_but_x + heal_but_w && 
+           mouseY > heal_but_y && mouseY < heal_but_y + heal_but_h){
+            press_heal();
+        }
+      }
+    }
+  }
+  
+  if(scene == 2){
     send_text_message("You have defeated the foe! You win!");
     play_again();
     if(mouseIsPressed) {
@@ -98,95 +226,30 @@ function draw() {
           restart_battle();
       }
     }
-    return
-     }
-  if(player_lost){
-    send_text_message("You have lost to the foe. You lose.");
+    menu_button();
+    if(mouseIsPressed) {
+      if(mouseX > menu_but_x && mouseX < menu_but_x + play_but_w && 
+         mouseY > menu_but_y && mouseY < menu_but_y + play_but_h){
+          scene = 0;
+      }
+    }
+  }
+  if(scene == 3){
+    send_text_message("You have been defeated by the foe. You lose.");
     play_again();
     if(mouseIsPressed) {
       if(mouseX > play_but_x && mouseX < play_but_x + play_but_w && 
          mouseY > play_but_y && mouseY < play_but_y + play_but_h){
-          restart_battle();
+          scene = 0;
       }
     }
-    return
-     }
-  image(bg_img, 0, 0, 600, 400);
-  if(hurt_counter < 255){
-    tint(255, hurt_counter, hurt_counter);
-  } else {
-    tint(255, 255, 255, 255);
-  }
-  image(img, 210, img_y, 140, 140);
-  tint(255, 255, 255, 255);
-  img_counter++
-  if(img_counter >= img_delay){
-    img_counter = 0
-    if(img_y < img_y_max){
-      img_y +=2
-    } else {
-      img_y -=2
-    }
-    }
-    
-  fill(255, 0, 0);
-  rect(50, 25, 500, 30); //Foe HP bar
-  rect(100, 300, 400, 30); //Player HP bar
-  rect(100, 330, 400, 30); //Player MANA bar
-  update_player_HP();
-  update_foe_HP();
-  update_player_MANA();
-  send_text_message(textbox_last_message);
-  if(block_active){
-      console.log('block_active is active');
-    block_counter++
-    if(block_counter >= block_delay){
-      block_counter = 0
-      block_active = false;
-      hide_buttons = false;
-      foe_turn = true;
-    }
-  }
-  
-  if(foe_turn){
-    if(foe_thinking_counter <= 180){
-      foe_thinking_counter++
-      send_text_message("The foe is pondering their next move...");
-    } else{
-      foe_take_action();
-    }
-    
-  }
-  
-  if(((player_hb_x == player_hb_x_target) && (foe_hb_x == foe_hb_x_target) && (!foe_turn)) && (!hide_buttons)){
-    attack_button();
-    block_button();
-    ex_attack_button();
-    heal_button();
-    if(mouseIsPressed) {
-      if(mouseX > atk_but_x && mouseX < atk_but_x + atk_but_w && 
-         mouseY > atk_but_y && mouseY < atk_but_y + atk_but_h){
-          press_atk();
+    menu_button();
+      if(mouseIsPressed) {
+        if(mouseX > menu_but_x && mouseX < menu_but_x + play_but_w && 
+           mouseY > menu_but_y && mouseY < menu_but_y + play_but_h){
+            scene = 0;
+        }
       }
-    }
-    if(mouseIsPressed) {
-      if(mouseX > blo_but_x && mouseX < blo_but_x + blo_but_w && 
-         mouseY > blo_but_y && mouseY < blo_but_y + blo_but_h){
-          press_blo();
-      }
-    }
-    if(mouseIsPressed) {
-      if(mouseX > ex_atk_but_x && mouseX < ex_atk_but_x + ex_atk_but_w && 
-         mouseY > ex_atk_but_y && mouseY < ex_atk_but_y + ex_atk_but_h){
-          press_ex_atk();
-      }
-    }
-    if(mouseIsPressed) {
-      if(mouseX > heal_but_x && mouseX < heal_but_x + heal_but_w && 
-         mouseY > heal_but_y && mouseY < heal_but_y + heal_but_h){
-          press_heal();
-      }
-    }
   }
 }
 
@@ -250,7 +313,7 @@ function update_player_HP(){
     player_hb_x = player_hb_x_target;
   }
   if(player_hb_x == 0){
-    player_lost = true;
+    scene = 3;
   }
   
   rect(100, 300, player_hb_x, 30); //Player HP bar
@@ -360,7 +423,7 @@ function update_foe_HP(){
   
   rect(50, 25, foe_hb_x, 30); //Foe HP bar
   if(foe_hb_x == 0){
-    player_won = true;
+    scene = 2;
   }
 }
   
@@ -450,7 +513,8 @@ function attack_button(){
   text('Attack', atk_but_x + 10, atk_but_y + 30);
   atk_but = true
 }
-  
+
+
 function block_button(){
   fill(115, 217, 235);
   rect(blo_but_x, blo_but_y, blo_but_w, blo_but_h, 20);
@@ -487,10 +551,45 @@ function play_again(){
   play_but = true
 }
 
+function medium_button(){
+  fill(247, 140, 126);
+  rect(medium_but_x, medium_but_y, medium_but_w, medium_but_h, 20);
+  fill(0, 0, 0);
+  textSize(18);
+  text('Medium', medium_but_x + 10, medium_but_y + 30);
+  medium_but = true
+}
+  
+function easy_button(){
+  fill(247, 140, 126);
+  rect(easy_but_x, easy_but_y, easy_but_w, easy_but_h, 20);
+  fill(0, 0, 0);
+  textSize(18);
+  text('Easy', easy_but_x + 10, easy_but_y + 30);
+  easy_but = true
+}
+
+function hard_button(){
+  fill(247, 140, 126);
+  rect(hard_but_x, hard_but_y, hard_but_w, hard_but_h, 20);
+  fill(0, 0, 0);
+  textSize(18);
+  text('Easy', hard_but_x + 10, hard_but_y + 30);
+  hard_but = true
+}
+  
+function menu_button(){
+  fill(231, 232, 146);
+  rect(menu_but_x, menu_but_y, menu_but_w, menu_but_h, 20);
+  fill(0, 0, 0);
+  textSize(22);
+  text('Return to menu?', menu_but_x + 25, menu_but_y + 45);
+  menu_but = true
+}
+  
 function restart_battle(){
   console.log('RESTART BATTLE Button pressed');
-  player_won = false;
-  player_lost = false;
+  scene = 1;
   player_HP = player_max_HP
   player_MANA = player_max_MANA/2
   foe_HP = foe_max_HP
@@ -509,5 +608,3 @@ function restart_battle(){
   foe_thinking_counter = 0;
   send_text_message("Combat is starting...");
 }
-  
-//Fix OVER heal, block delay after using heal breaks
