@@ -2,7 +2,8 @@ function setup() {
   createCanvas(600, 400);
 }
 
-var scene = 3;
+var scene = 0;
+var last_scene = 0;
 
 var player_HP = 100
 var player_max_HP = 100
@@ -10,6 +11,13 @@ var player_MANA = 50
 var player_max_MANA = 100
 var foe_HP = 200
 var foe_max_HP = 200
+var foe_low_damage = 16
+var foe_high_damage = 32
+var foe_low_blo_damage = 7
+var foe_high_blo_damage = 14
+var foe_sp_low_damage = 50
+var foe_sp_high_damage = 60
+var icon_used = 2
 
 var foe_thinking_counter = 0
 var block_counter = 0
@@ -77,22 +85,22 @@ var menu_but_w = 200
 var menu_but_h = 75
 
 var easy_but = true
-var easy_but_x = 100
-var easy_but_y = 240
-var easy_but_w = 75
-var easy_but_h = 50
+var easy_but_x = 130
+var easy_but_y = 160
+var easy_but_w = 100
+var easy_but_h = 75
 
 var medium_but = true
-var medium_but_x = 200
-var medium_but_y = 240
-var medium_but_w = 75
-var medium_but_h = 50
+var medium_but_x = 260
+var medium_but_y = 160
+var medium_but_w = 100
+var medium_but_h = 75
 
 var hard_but = true
-var hard_but_x = 300
-var hard_but_y = 240
-var hard_but_w = 75
-var hard_but_h = 50
+var hard_but_x = 390
+var hard_but_y = 160
+var hard_but_w = 100
+var hard_but_h = 75
 
 let img;
 let bg_img;
@@ -109,7 +117,15 @@ var hurt_counter = 255
 function preload() {
   img = loadImage('https://static.vecteezy.com/system/resources/thumbnails/027/190/981/small_2x/pixel-art-monster-character-4-png.png');
 
+  img_easy = loadImage('https://static.vecteezy.com/system/resources/thumbnails/027/517/567/small/pixel-art-cartoon-wild-shadow-deamon-character-png.png');
+
+  img_hard = loadImage('https://media.tenor.com/qANjmZo5MscAAAAj/monster-boss.gif');
+  
   bg_img = loadImage('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTi0HqZvch4xcsnLF03GZW-Jin8nG8V9pza7g&s');
+
+  bg_img_2 = loadImage('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmWSo4t-C2baCv6jeGit_Wb-Zl-3MKisZoWQ&s');
+
+  bg_img_3 = loadImage('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0p44RHod4jAYnHQilOW6bFpNNMO0PvFwWgRGlOg13gKKzR52UjFXXf8rddmUCPeffGcE&usqp=CAU');
 }
 
 function draw() {
@@ -121,29 +137,69 @@ function draw() {
       if(mouseIsPressed) {
         if(mouseX > easy_but_x && mouseX < easy_but_x + easy_but_w && 
            mouseY > easy_but_y && mouseY < easy_but_y + easy_but_h){
-            scene = 1;
+          foe_low_damage = 10
+          foe_high_damage = 20
+          foe_low_blo_damage = 4
+          foe_high_blo_damage = 7
+          foe_sp_low_damage = 30
+          foe_sp_high_damage = 40
+          icon_used = 1
+          scene = 1;
+          last_scene = 1;
+          restart_battle();
         }
       }
       if(mouseIsPressed) {
         if(mouseX > hard_but_x && mouseX < hard_but_x + hard_but_w && 
            mouseY > hard_but_y && mouseY < hard_but_y + hard_but_h){
-            scene = 1;
+          foe_HP = 300
+          foe_max_HP = 300
+          foe_low_damage = 20
+          foe_high_damage = 30
+          foe_low_blo_damage = 10
+          foe_high_blo_damage = 15
+          foe_sp_low_damage = 60
+          foe_sp_high_damage = 75
+          icon_used = 3
+          scene = 1;
+          restart_battle();
         }
       }
       if(mouseIsPressed) {
         if(mouseX > medium_but_x && mouseX < medium_but_x + medium_but_w && 
            mouseY > medium_but_y && mouseY < medium_but_y + medium_but_h){
+            icon_used = 2
+            foe_low_damage = 16
+            foe_high_damage = 32
+            foe_low_blo_damage = 7
+            foe_high_blo_damage = 14
+            foe_sp_low_damage = 50
+            foe_sp_high_damage = 60
             scene = 1;
+            restart_battle();
         }
       }
   }
   if(scene == 1){
-    image(bg_img, 0, 0, 600, 400);
+    if(icon_used == 1){
+      image(bg_img_2, 0, 0, 600, 400);
+    }
+    if(icon_used == 2){
+      image(bg_img, 0, 0, 600, 400); 
+    }
+    if(icon_used == 3){
+      image(bg_img_3, 0, 0, 600, 400);
+    }
     if(hurt_counter < 255){
       tint(255, hurt_counter, hurt_counter);
     } else {
       tint(255, 255, 255, 255);
     }
+    if(icon_used == 1){
+    image(img_easy, 210, img_y, 140, 140);
+    tint(255, 255, 255, 255);
+    }
+    if(icon_used == 2){
     image(img, 210, img_y, 140, 140);
     tint(255, 255, 255, 255);
     img_counter++
@@ -155,11 +211,17 @@ function draw() {
         img_y -=2
       }
       }
-
+    }
+    if(icon_used == 3){
+    image(img_hard, 140, 50, 325, 325);
+    tint(255, 255, 255, 255);
+    }
     fill(255, 0, 0);
     rect(50, 25, 500, 30); //Foe HP bar
     rect(100, 300, 400, 30); //Player HP bar
     rect(100, 330, 400, 30); //Player MANA bar
+    fill(255, 255, 255);
+    rect(425, 100, 175, 120);
     update_player_HP();
     update_foe_HP();
     update_player_MANA();
@@ -218,7 +280,8 @@ function draw() {
   }
   
   if(scene == 2){
-    send_text_message("You have defeated the foe! You win!");
+    textSize(20);
+    text("You have defeated the foe! You win!", 140, 60, 400);
     play_again();
     if(mouseIsPressed) {
       if(mouseX > play_but_x && mouseX < play_but_x + play_but_w && 
@@ -235,12 +298,14 @@ function draw() {
     }
   }
   if(scene == 3){
-    send_text_message("You have been defeated by the foe. You lose.");
+    textSize(20);
+    text("You have been defeated by the foe. You lose.", 140, 60, 400);
     play_again();
     if(mouseIsPressed) {
       if(mouseX > play_but_x && mouseX < play_but_x + play_but_w && 
          mouseY > play_but_y && mouseY < play_but_y + play_but_h){
-          scene = 0;
+          restart_battle();
+          scene = 1;
       }
     }
     menu_button();
@@ -348,11 +413,11 @@ function update_player_MANA(){
 
 function send_text_message(textmessage = null){
   fill(0, 0, 0);
-  textSize(20);
+  textSize(16);
   if(textmessage){
     textbox_last_message = textmessage    
   }
-  text(textbox_last_message, 140, 60, 400);
+  text(textbox_last_message, 430, 110, 180);
 }
   
   
@@ -434,7 +499,7 @@ function foe_take_action(){
       player_hurt(round(random(5, 8))); 
       send_text_message("The foe is misses their special attack!")
     } else {
-      player_hurt(round(random(50, 60)));
+      player_hurt(round(random(foe_sp_low_damage, foe_sp_high_damage)));
       send_text_message("The foe lands their special attack!")
     }
     foe_charging = false;    
@@ -442,16 +507,24 @@ function foe_take_action(){
     let picked_action = random(1, 100);  
     if(picked_action > 40){
       if(player_block){
-        player_hurt(round(random(7, 14))); 
+        player_hurt(round(random(foe_low_blo_damage, foe_high_blo_damage))); 
       } else {
-        player_hurt(round(random(16, 32)));
+        player_hurt(round(random(foe_low_damage, foe_high_damage)));
       }
       send_text_message("The foe attacks you!")
     } else if(picked_action > 10){
       foe_charging = true;
       send_text_message("The foe is charging a special attack, It will hit if you have less then 50% MANA!")    
     } else {
-      send_text_message("The foe forgets about their move!")
+      if(icon_used == 3){
+        if(player_change_MA(20)){
+          send_text_message("The foe drains your MANA!");
+        } else {
+          send_text_message("The foe tries to drain your MANA, and fails!");    
+        }
+      } else {
+      send_text_message("The foe forgets about their move!")  
+      }
     }
   }
 
@@ -552,29 +625,29 @@ function play_again(){
 }
 
 function medium_button(){
-  fill(247, 140, 126);
+  fill(255, 179, 0);
   rect(medium_but_x, medium_but_y, medium_but_w, medium_but_h, 20);
   fill(0, 0, 0);
-  textSize(18);
-  text('Medium', medium_but_x + 10, medium_but_y + 30);
+  textSize(22);
+  text('Normal', medium_but_x + 12, medium_but_y + 45);
   medium_but = true
 }
   
 function easy_button(){
-  fill(247, 140, 126);
+  fill(76, 235, 52);
   rect(easy_but_x, easy_but_y, easy_but_w, easy_but_h, 20);
   fill(0, 0, 0);
-  textSize(18);
-  text('Easy', easy_but_x + 10, easy_but_y + 30);
+  textSize(22);
+  text('Easy', easy_but_x + 25, easy_but_y + 45);
   easy_but = true
 }
 
 function hard_button(){
-  fill(247, 140, 126);
+  fill(250, 126, 110);
   rect(hard_but_x, hard_but_y, hard_but_w, hard_but_h, 20);
   fill(0, 0, 0);
-  textSize(18);
-  text('Easy', hard_but_x + 10, hard_but_y + 30);
+  textSize(22);
+  text('Hard', hard_but_x + 25, hard_but_y + 45);
   hard_but = true
 }
   
