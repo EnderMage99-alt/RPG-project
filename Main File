@@ -1,5 +1,6 @@
 function setup() {
-  createCanvas(600, 400);
+  let cnv = createCanvas(600, 400);
+  cnv.position(700, 200);
 }
 
 var scene = 0;
