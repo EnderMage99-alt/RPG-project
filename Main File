@@ -19,6 +19,7 @@ var foe_high_blo_damage = 14
 var foe_sp_low_damage = 50
 var foe_sp_high_damage = 60
 var icon_used = 2
+var last_button = 0
 
 var foe_thinking_counter = 0
 var block_counter = 0
@@ -103,6 +104,12 @@ var hard_but_y = 160
 var hard_but_w = 100
 var hard_but_h = 75
 
+var secret_but = true
+var secret_but_x = 250
+var secret_but_y = 260
+var secret_but_w = 120
+var secret_but_h = 75
+
 let img;
 let bg_img;
 
@@ -113,6 +120,7 @@ var img_y_max = 92
 
 var hurt_counter = 255
 
+var seeking_button = -1;
 
 // Load the image.
 function preload() {
@@ -127,6 +135,11 @@ function preload() {
   bg_img_2 = loadImage('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmWSo4t-C2baCv6jeGit_Wb-Zl-3MKisZoWQ&s');
 
   bg_img_3 = loadImage('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0p44RHod4jAYnHQilOW6bFpNNMO0PvFwWgRGlOg13gKKzR52UjFXXf8rddmUCPeffGcE&usqp=CAU');
+
+  img_sec = loadImage('https://media.tenor.com/ACxFpM3q1yYAAAAj/faith-the-unholy-trinity-monster.gif')
+
+  bg_img_sec = loadImage('https://i.ytimg.com/vi/C2GpeLnE0AU/hq720.jpg?sqp=-oaymwE7CK4FEIIDSFryq4qpAy0IARUAAAAAGAElAADIQj0AgKJD8AEB-AH-CYAC0AWKAgwIABABGEggGSh_MA8=&rs=AOn4CLBlwLxb5QxtSkX1khtpfn2AzRHW4A');
+  
 }
 
 function draw() {
@@ -135,6 +148,7 @@ function draw() {
       easy_button();
       medium_button();
       hard_button();
+      secret_button();
       if(mouseIsPressed) {
         if(mouseX > easy_but_x && mouseX < easy_but_x + easy_but_w && 
            mouseY > easy_but_y && mouseY < easy_but_y + easy_but_h){
@@ -180,6 +194,22 @@ function draw() {
             restart_battle();
         }
       }
+      if(mouseIsPressed) {
+        if(mouseX > secret_but_x && mouseX < secret_but_x + secret_but_w && 
+           mouseY > secret_but_y && mouseY < secret_but_y + secret_but_h){
+            icon_used = 666
+            foe_HP = 666
+            foe_max_HP = 666
+            foe_low_damage = 20
+            foe_high_damage = 25
+            foe_low_blo_damage = 10
+            foe_high_blo_damage = 20
+            foe_sp_low_damage = 50
+            foe_sp_high_damage = 60
+            scene = 1;
+            restart_battle();
+        }
+      }
   }
   if(scene == 1){
     if(icon_used == 1){
@@ -190,6 +220,9 @@ function draw() {
     }
     if(icon_used == 3){
       image(bg_img_3, 0, 0, 600, 400);
+    }
+    if(icon_used == 666){
+      image(bg_img_sec, 0, 0, 600, 400);
     }
     if(hurt_counter < 255){
       tint(255, hurt_counter, hurt_counter);
@@ -217,6 +250,10 @@ function draw() {
     image(img_hard, 140, 50, 325, 325);
     tint(255, 255, 255, 255);
     }
+    if(icon_used == 666){
+    image(img_sec, 210, 100, 140, 140);
+    tint(255, 255, 255, 255);
+    }    
     fill(255, 0, 0);
     rect(50, 25, 500, 30); //Foe HP bar
     rect(100, 300, 400, 30); //Player HP bar
@@ -243,7 +280,12 @@ function draw() {
         foe_thinking_counter++
         send_text_message("The foe is pondering their next move...");
       } else{
-        foe_take_action();
+        if(icon_used == 666){
+          sec_foe_take_action();
+        } else {
+          foe_take_action();
+        }
+
       }
 
     }
@@ -512,20 +554,29 @@ function foe_take_action(){
       } else {
         player_hurt(round(random(foe_low_damage, foe_high_damage)));
       }
-      send_text_message("The foe attacks you!")
+      if(icon_used == 2){
+        send_text_message("The foe attacks you, and drains a bit of your MANA!")
+        player_change_MA(5)
+      } else {
+        send_text_message("The foe attacks you!") 
+      }
     } else if(picked_action > 10){
       foe_charging = true;
       send_text_message("The foe is charging a special attack, It will hit if you have less then 50% MANA!")    
     } else {
       if(icon_used == 3){
-        if(player_change_MA(20)){
+        if(player_change_MA(50)){
           send_text_message("The foe drains your MANA!");
         } else {
           send_text_message("The foe tries to drain your MANA, and fails!");    
         }
+      } else if (icon_used == 2){
+        send_text_message("The foe casts heal!")
+        foe_hurt(round(random(-20, -30)));
       } else {
-      send_text_message("The foe forgets about their move!")  
+        send_text_message("The foe forgets about their move!")
       }
+      
     }
   }
 
@@ -534,7 +585,46 @@ function foe_take_action(){
   hide_buttons = false;
   foe_thinking_counter = 0;
 }
-  
+
+function sec_foe_take_action(){
+  let picked_action = random(1, 100);
+  if(picked_action > 40){
+    if(player_block){
+      player_hurt(round(random(foe_low_blo_damage, foe_high_blo_damage))); 
+    } else {
+      player_hurt(round(random(foe_low_damage, foe_high_damage)));
+    }
+    send_text_message("The ??? attacks you, and drains a bit of your MANA!")
+    player_change_MA(10)
+  } else if(picked_action > 10){
+  let picked_button = round(random(0, 4));
+    if(picked_button <= 1){
+      seeking_button = 1
+      send_text_message("??? gazes at your attack button!")
+    } else if(picked_button <= 2) {
+      seeking_button = 2
+      send_text_message("??? gazes at your block button!")
+    } else if(picked_button <= 3) {
+      seeking_button = 3
+      send_text_message("??? gazes at your ex attack button!")
+    } else if(picked_button <= 4) {
+      seeking_button = 4
+      send_text_message("??? gazes at your heal button!")
+    }
+  } else {
+      if(player_change_MA(50)){
+        send_text_message("The ??? drains your MANA!");
+      } else {
+        send_text_message("The ??? tries to drain your MANA, and fails!");    
+      }
+    
+  }
+
+foe_turn = false;
+player_block = false;
+hide_buttons = false;
+foe_thinking_counter = 0;
+}
   
   
   
@@ -547,6 +637,7 @@ function press_atk(){
   hide_buttons = true;
   player_attacked = true;
   send_text_message("You attack the foe, and regain some MANA!");
+  last_button = 1;
 }
 
 function press_blo(){
@@ -555,6 +646,7 @@ function press_blo(){
   player_block = true;
   block_active = true;
   hide_buttons = true;
+  last_button = 2;
 }
 
 function press_ex_atk(){
@@ -563,6 +655,7 @@ function press_ex_atk(){
     hide_buttons = true;
     foe_hurt(round(random(40, 60)));
     send_text_message("You special attack the foe!");
+    last_button = 3;
   } else {
     send_text_message("You don't have enough MANA...");    
   }
@@ -574,6 +667,7 @@ function press_heal(){
     block_active = true;
     player_hurt(round(random(-25, -35)));
     send_text_message("You heal yourself!");
+    last_button = 4;
   } else {
     send_text_message("You don't have enough MANA...");    
   }
@@ -649,6 +743,15 @@ function hard_button(){
   fill(0, 0, 0);
   textSize(22);
   text('Hard', hard_but_x + 25, hard_but_y + 45);
+  hard_but = true
+}
+
+function secret_button(){
+  fill(250, 126, 110);
+  rect(secret_but_x, secret_but_y, secret_but_w, secret_but_h, 20);
+  fill(0, 0, 0);
+  textSize(22);
+  text('Secret', secret_but_x + 25, secret_but_y + 45);
   hard_but = true
 }
   
