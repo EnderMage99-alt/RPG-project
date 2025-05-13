@@ -20,6 +20,9 @@ var foe_sp_low_damage = 50
 var foe_sp_high_damage = 60
 var icon_used = 2
 var last_button = 0
+var foe_1_defeated = false
+var foe_2_defeated = false
+var foe_3_defeated = false
 
 var foe_thinking_counter = 0
 var block_counter = 0
@@ -139,16 +142,35 @@ function preload() {
   img_sec = loadImage('https://media.tenor.com/ACxFpM3q1yYAAAAj/faith-the-unholy-trinity-monster.gif')
 
   bg_img_sec = loadImage('https://i.ytimg.com/vi/C2GpeLnE0AU/hq720.jpg?sqp=-oaymwE7CK4FEIIDSFryq4qpAy0IARUAAAAAGAElAADIQj0AgKJD8AEB-AH-CYAC0AWKAgwIABABGEggGSh_MA8=&rs=AOn4CLBlwLxb5QxtSkX1khtpfn2AzRHW4A');
+
+  bg_img_menu = loadImage('https://mir-s3-cdn-cf.behance.net/project_modules/source/35c11e30942431.563a0d237abab.png');
+
+  trophy_1_img = loadImage('https://cdn-icons-png.freepik.com/512/465/465269.png');
+
+  trophy_2_img = loadImage('https://png.pngtree.com/png-clipart/20220704/ourmid/pngtree-trophy-cup-winner-pixel-illustration-png-image_5685913.png');
+
+  trophy_3_img = loadImage('https://png.pngtree.com/png-vector/20240323/ourmid/pngtree-pixel-golden-trophy-the-winner-trophy-cup-pixel-art-with-sparkle-png-image_12193297.png');
   
 }
 
 function draw() {
   background(220);
   if(scene == 0){
+      image(bg_img_menu, 0, 0, 600, 400);
       easy_button();
       medium_button();
       hard_button();
-      secret_button();
+      if(foe_1_defeated){
+        image(trophy_1_img, 20, 20, 80, 80);
+      }
+      if(foe_2_defeated){
+        image(trophy_2_img, 100, -20, 140, 140);
+      }
+      if(foe_3_defeated){
+        image(trophy_3_img, 200, -40, 160, 160);
+      }
+      if(foe_1_defeated && foe_2_defeated && foe_3_defeated)
+        secret_button();
       if(mouseIsPressed) {
         if(mouseX > easy_but_x && mouseX < easy_but_x + easy_but_w && 
            mouseY > easy_but_y && mouseY < easy_but_y + easy_but_h){
@@ -194,6 +216,7 @@ function draw() {
             restart_battle();
         }
       }
+      if(foe_1_defeated && foe_2_defeated && foe_3_defeated){
       if(mouseIsPressed) {
         if(mouseX > secret_but_x && mouseX < secret_but_x + secret_but_w && 
            mouseY > secret_but_y && mouseY < secret_but_y + secret_but_h){
@@ -208,8 +231,10 @@ function draw() {
             foe_sp_high_damage = 60
             scene = 1;
             restart_battle();
+            send_text_message("You are ambushed by ???");
         }
       }
+    }
   }
   if(scene == 1){
     if(icon_used == 1){
@@ -531,6 +556,13 @@ function update_foe_HP(){
   
   rect(50, 25, foe_hb_x, 30); //Foe HP bar
   if(foe_hb_x == 0){
+    if(icon_used == 1){
+      foe_1_defeated = true
+    } else if(icon_used == 2){
+      foe_2_defeated = true
+    } else if(icon_used == 3){
+      foe_3_defeated = true
+    }
     scene = 2;
   }
 }
@@ -587,6 +619,10 @@ function foe_take_action(){
 }
 
 function sec_foe_take_action(){
+  if(seeking_button == last_button){
+     player_hurt(round(random(30, 40)));
+    send_text_message("Your last move triggers ???, Causing ??? to rip into you!")
+  } else {
   let picked_action = random(1, 100);
   if(picked_action > 40){
     if(player_block){
@@ -594,8 +630,13 @@ function sec_foe_take_action(){
     } else {
       player_hurt(round(random(foe_low_damage, foe_high_damage)));
     }
-    send_text_message("The ??? attacks you, and drains a bit of your MANA!")
-    player_change_MA(10)
+    if(player_change_MA(20)){
+      send_text_message("The ??? attacks you, and drains a bit of your MANA!")      
+    } else {
+      send_text_message("The ??? attacks you, but you are no MANA to drain, causing it to devour itself!")
+      foe_hurt(150)
+    }
+    
   } else if(picked_action > 10){
   let picked_button = round(random(0, 4));
     if(picked_button <= 1){
@@ -615,11 +656,12 @@ function sec_foe_take_action(){
       if(player_change_MA(50)){
         send_text_message("The ??? drains your MANA!");
       } else {
-        send_text_message("The ??? tries to drain your MANA, and fails!");    
+        send_text_message("The ??? tries to drain your MANA, and fails causing it to devour itself!");
+        foe_hurt(300)
       }
     
   }
-
+}
 foe_turn = false;
 player_block = false;
 hide_buttons = false;
@@ -747,11 +789,11 @@ function hard_button(){
 }
 
 function secret_button(){
-  fill(250, 126, 110);
+  fill(156, 29, 0);
   rect(secret_but_x, secret_but_y, secret_but_w, secret_but_h, 20);
   fill(0, 0, 0);
   textSize(22);
-  text('Secret', secret_but_x + 25, secret_but_y + 45);
+  text('G͍̍r͔͙͓̹̙͒̾̂̃̐e͈̹͔̱̽̽͌͞ė̗t̺͙̂̀i̻̰͆͛ṇ͌g̝͍͇̙͋͛͊̈s?̬̖͋͂̿̿͟͜', secret_but_x + 5, secret_but_y + 45);
   hard_but = true
 }
   
@@ -783,5 +825,6 @@ function restart_battle(){
   hide_buttons = false;
   hurt_counter = 255;
   foe_thinking_counter = 0;
+  seeking_button = -1;
   send_text_message("Combat is starting...");
 }
