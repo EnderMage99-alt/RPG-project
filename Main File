@@ -27,6 +27,9 @@ var foe_3_defeated = false
 var foe_thinking_counter = 0
 var block_counter = 0
 var block_delay = 120
+var button_block_active = false
+var button_counter = 0
+var button_delay = 60
 var textbox_last_message = "Combat is starting..."
 
 var block_active = false;
@@ -155,6 +158,14 @@ function preload() {
 
 function draw() {
   background(220);
+    if(button_block_active){
+        console.log('button_block_active is active');
+      button_counter++
+      if(button_counter >= button_delay){
+        button_counter = 0
+        button_block_active = false;
+      }
+    }
   if(scene == 0){
       image(bg_img_menu, 0, 0, 600, 400);
       easy_button();
@@ -173,7 +184,8 @@ function draw() {
         secret_button();
       if(mouseIsPressed) {
         if(mouseX > easy_but_x && mouseX < easy_but_x + easy_but_w && 
-           mouseY > easy_but_y && mouseY < easy_but_y + easy_but_h){
+           mouseY > easy_but_y && mouseY < easy_but_y + easy_but_h && !button_block_active){
+          button_block_active = true;
           foe_low_damage = 10
           foe_high_damage = 20
           foe_low_blo_damage = 4
@@ -188,7 +200,8 @@ function draw() {
       }
       if(mouseIsPressed) {
         if(mouseX > hard_but_x && mouseX < hard_but_x + hard_but_w && 
-           mouseY > hard_but_y && mouseY < hard_but_y + hard_but_h){
+           mouseY > hard_but_y && mouseY < hard_but_y + hard_but_h && !button_block_active){
+          button_block_active = true;
           foe_HP = 300
           foe_max_HP = 300
           foe_low_damage = 20
@@ -204,7 +217,8 @@ function draw() {
       }
       if(mouseIsPressed) {
         if(mouseX > medium_but_x && mouseX < medium_but_x + medium_but_w && 
-           mouseY > medium_but_y && mouseY < medium_but_y + medium_but_h){
+           mouseY > medium_but_y && mouseY < medium_but_y + medium_but_h && !button_block_active){
+            button_block_active = true;
             icon_used = 2
             foe_low_damage = 16
             foe_high_damage = 32
@@ -219,7 +233,8 @@ function draw() {
       if(foe_1_defeated && foe_2_defeated && foe_3_defeated){
       if(mouseIsPressed) {
         if(mouseX > secret_but_x && mouseX < secret_but_x + secret_but_w && 
-           mouseY > secret_but_y && mouseY < secret_but_y + secret_but_h){
+           mouseY > secret_but_y && mouseY < secret_but_y + secret_but_h && !button_block_active){
+            button_block_active = true;
             icon_used = 666
             foe_HP = 666
             foe_max_HP = 666
@@ -322,25 +337,29 @@ function draw() {
       heal_button();
       if(mouseIsPressed) {
         if(mouseX > atk_but_x && mouseX < atk_but_x + atk_but_w && 
-           mouseY > atk_but_y && mouseY < atk_but_y + atk_but_h){
+           mouseY > atk_but_y && mouseY < atk_but_y + atk_but_h && !button_block_active){
+            button_block_active = true;
             press_atk();
         }
       }
       if(mouseIsPressed) {
         if(mouseX > blo_but_x && mouseX < blo_but_x + blo_but_w && 
-           mouseY > blo_but_y && mouseY < blo_but_y + blo_but_h){
+           mouseY > blo_but_y && mouseY < blo_but_y + blo_but_h && !button_block_active){
+            button_block_active = true;
             press_blo();
         }
       }
       if(mouseIsPressed) {
         if(mouseX > ex_atk_but_x && mouseX < ex_atk_but_x + ex_atk_but_w && 
-           mouseY > ex_atk_but_y && mouseY < ex_atk_but_y + ex_atk_but_h){
+           mouseY > ex_atk_but_y && mouseY < ex_atk_but_y + ex_atk_but_h && !button_block_active){
+            button_block_active = true;
             press_ex_atk();
         }
       }
       if(mouseIsPressed) {
         if(mouseX > heal_but_x && mouseX < heal_but_x + heal_but_w && 
-           mouseY > heal_but_y && mouseY < heal_but_y + heal_but_h){
+           mouseY > heal_but_y && mouseY < heal_but_y + heal_but_h && !button_block_active){
+            button_block_active = true;
             press_heal();
         }
       }
@@ -353,14 +372,16 @@ function draw() {
     play_again();
     if(mouseIsPressed) {
       if(mouseX > play_but_x && mouseX < play_but_x + play_but_w && 
-         mouseY > play_but_y && mouseY < play_but_y + play_but_h){
+         mouseY > play_but_y && mouseY < play_but_y + play_but_h && !button_block_active){
+          button_block_active = true;
           restart_battle();
       }
     }
     menu_button();
     if(mouseIsPressed) {
       if(mouseX > menu_but_x && mouseX < menu_but_x + play_but_w && 
-         mouseY > menu_but_y && mouseY < menu_but_y + play_but_h){
+         mouseY > menu_but_y && mouseY < menu_but_y + play_but_h && !button_block_active){
+          button_block_active = true;
           scene = 0;
       }
     }
@@ -371,7 +392,8 @@ function draw() {
     play_again();
     if(mouseIsPressed) {
       if(mouseX > play_but_x && mouseX < play_but_x + play_but_w && 
-         mouseY > play_but_y && mouseY < play_but_y + play_but_h){
+         mouseY > play_but_y && mouseY < play_but_y + play_but_h && !button_block_active){
+          button_block_active = true;
           restart_battle();
           scene = 1;
       }
@@ -379,7 +401,8 @@ function draw() {
     menu_button();
       if(mouseIsPressed) {
         if(mouseX > menu_but_x && mouseX < menu_but_x + play_but_w && 
-           mouseY > menu_but_y && mouseY < menu_but_y + play_but_h){
+           mouseY > menu_but_y && mouseY < menu_but_y + play_but_h && !button_block_active){
+            button_block_active = true;
             scene = 0;
         }
       }
