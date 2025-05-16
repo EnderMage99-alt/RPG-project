@@ -24,6 +24,11 @@ var foe_1_defeated = false
 var foe_2_defeated = false
 var foe_3_defeated = false
 
+var turns_passed = 0
+var foe_1_highscore = null
+var foe_2_highscore = null
+var foe_3_highscore = null
+var foe_4_highscore = null
 var foe_thinking_counter = 0
 var block_counter = 0
 var block_delay = 120
@@ -112,18 +117,25 @@ var hard_but_h = 75
 
 var secret_but = true
 var secret_but_x = 250
-var secret_but_y = 260
+var secret_but_y = 275
 var secret_but_w = 120
 var secret_but_h = 75
 
+var battle_but = true
+var battle_but_x = 5
+var battle_but_y = 10
+var battle_but_w = 40
+var battle_but_h = 40
+
+//IMG vars
 let img;
 let bg_img;
-
 var img_counter = 0
 var img_delay = 60
 var img_y = 90
 var img_y_max = 92
 
+//Extras
 var hurt_counter = 255
 
 var seeking_button = -1;
@@ -182,6 +194,35 @@ function draw() {
       }
       if(foe_1_defeated && foe_2_defeated && foe_3_defeated)
         secret_button();
+      if(foe_1_highscore){
+        fill(225, 225, 225);
+        rect(155, 115, 40, 40, 20);
+        fill(0, 0, 0);
+        textSize(22);
+        text(foe_1_highscore, 169, 143);
+      }
+      if(foe_2_highscore){
+        fill(225, 225, 225);
+        rect(285, 115, 40, 40, 20);
+        fill(0, 0, 0);
+        textSize(22);
+        text(foe_2_highscore, 299, 143);        
+      }
+      if(foe_3_highscore){
+        fill(225, 225, 225);
+        rect(415, 115, 40, 40, 20);
+        fill(0, 0, 0);
+        textSize(22);
+        text(foe_3_highscore, 423, 143);        
+      }
+      if(foe_4_highscore){
+        fill(225, 225, 225);
+        rect(285, 235, 40, 40, 20);
+        fill(0, 0, 0);
+        textSize(22);
+        text(foe_4_highscore, 299, 263);        
+      }
+    
       if(mouseIsPressed) {
         if(mouseX > easy_but_x && mouseX < easy_but_x + easy_but_w && 
            mouseY > easy_but_y && mouseY < easy_but_y + easy_but_h && !button_block_active){
@@ -325,9 +366,8 @@ function draw() {
         } else {
           foe_take_action();
         }
-
+      turns_passed++
       }
-
     }
 
     if(((player_hb_x == player_hb_x_target) && (foe_hb_x == foe_hb_x_target) && (!foe_turn)) && (!hide_buttons)){
@@ -335,6 +375,7 @@ function draw() {
       block_button();
       ex_attack_button();
       heal_button();
+      exit_battle_button();
       if(mouseIsPressed) {
         if(mouseX > atk_but_x && mouseX < atk_but_x + atk_but_w && 
            mouseY > atk_but_y && mouseY < atk_but_y + atk_but_h && !button_block_active){
@@ -363,12 +404,19 @@ function draw() {
             press_heal();
         }
       }
+      if(mouseIsPressed) {
+        if(mouseX > battle_but_x && mouseX < battle_but_x + battle_but_w && 
+           mouseY > battle_but_y && mouseY < battle_but_y + battle_but_h && !button_block_active){
+            button_block_active = true;
+            scene = 3;
+        }
+      }
     }
   }
   
   if(scene == 2){
     textSize(20);
-    text("You have defeated the foe! You win!", 140, 60, 400);
+    text("You have defeated the foe! You win! It has taken you " + turns_passed + " turns to beat this foe!", 140, 60, 400);
     play_again();
     if(mouseIsPressed) {
       if(mouseX > play_but_x && mouseX < play_but_x + play_but_w && 
@@ -388,7 +436,7 @@ function draw() {
   }
   if(scene == 3){
     textSize(20);
-    text("You have been defeated by the foe. You lose.", 140, 60, 400);
+    text("You have been defeated by the foe. You lose. It took " + turns_passed + " turns for you to fall." , 140, 60, 400);
     play_again();
     if(mouseIsPressed) {
       if(mouseX > play_but_x && mouseX < play_but_x + play_but_w && 
@@ -508,7 +556,7 @@ function send_text_message(textmessage = null){
   if(textmessage){
     textbox_last_message = textmessage    
   }
-  text(textbox_last_message, 430, 110, 180);
+  text(textbox_last_message, 430, 110, 160);
 }
   
   
@@ -581,10 +629,15 @@ function update_foe_HP(){
   if(foe_hb_x == 0){
     if(icon_used == 1){
       foe_1_defeated = true
+      foe_1_highscore = turns_passed
     } else if(icon_used == 2){
       foe_2_defeated = true
+      foe_2_highscore = turns_passed
     } else if(icon_used == 3){
       foe_3_defeated = true
+      foe_3_highscore = turns_passed
+    } else if(icon_used == 666){
+      foe_4_highscore = turns_passed
     }
     scene = 2;
   }
@@ -718,7 +771,7 @@ function press_ex_atk(){
   if(player_change_MA(40)){
     player_attacked = true;
     hide_buttons = true;
-    foe_hurt(round(random(40, 60)));
+    foe_hurt(round(random(60, 100)));
     send_text_message("You special attack the foe!");
     last_button = 3;
   } else {
@@ -828,6 +881,15 @@ function menu_button(){
   text('Return to menu?', menu_but_x + 25, menu_but_y + 45);
   menu_but = true
 }
+
+function exit_battle_button(){
+  fill(156, 29, 0);
+  rect(battle_but_x, battle_but_y, battle_but_w, battle_but_h, 20);
+  fill(0, 0, 0);
+  textSize(22);
+  text('X', battle_but_x + 13, battle_but_y + 29);
+  menu_but = true
+}
   
 function restart_battle(){
   console.log('RESTART BATTLE Button pressed');
@@ -849,5 +911,6 @@ function restart_battle(){
   hurt_counter = 255;
   foe_thinking_counter = 0;
   seeking_button = -1;
+  turns_passed = 0;
   send_text_message("Combat is starting...");
 }
