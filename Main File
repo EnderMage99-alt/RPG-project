@@ -165,6 +165,16 @@ function preload() {
   trophy_2_img = loadImage('https://png.pngtree.com/png-clipart/20220704/ourmid/pngtree-trophy-cup-winner-pixel-illustration-png-image_5685913.png');
 
   trophy_3_img = loadImage('https://png.pngtree.com/png-vector/20240323/ourmid/pngtree-pixel-golden-trophy-the-winner-trophy-cup-pixel-art-with-sparkle-png-image_12193297.png');
+
+  attack_sound = loadSound('/sound_effects/8-bit-attack.mp3');
+  strong_attack_sound = loadSound('/sound_effects/strong-8-bit-attack.mp3');
+  block_sound = loadSound('/sound_effects/pixel_block.mp3');
+  damage_sound = loadSound('/sound_effects/pixel_damage.mp3');
+  death_sound = loadSound('/sound_effects/pixel_death.mp3');
+  heal_sound = loadSound('/sound_effects/pixel_heal.mp3');
+  win_sound = loadSound('/sound_effects/combat_win.mp3');
+  lose_sound = loadSound('/sound_effects/combat_loss.mp3');
+  background_sound = loadSound('/sound_effects/background_music.mp3');
   
 }
 
@@ -492,7 +502,7 @@ function player_hurt(amount){
   console.log('HP_percentage = ' + HP_percentage);
   player_hb_x_target = (player_hb_x_max * HP_percentage);
   console.log('player_hb_x_target = ' + player_hb_x_target);
-    
+  damage_sound.play();
   update_player_HP();
 }
 
@@ -517,6 +527,7 @@ function update_player_HP(){
     player_hb_x = player_hb_x_target;
   }
   if(player_hb_x == 0){
+    lose_sound.play();
     scene = 3;
   }
   
@@ -591,7 +602,7 @@ function foe_hurt(amount){
   foe_hb_x_target = (foe_hb_x_max * HP_percentage);
   console.log('foe_hb_x_target = ' + foe_hb_x_target);
   hurt_counter = 0;
-    
+  damage_sound.play();
   update_foe_HP();
 }
   
@@ -639,6 +650,7 @@ function update_foe_HP(){
     } else if(icon_used == 666){
       foe_4_highscore = turns_passed
     }
+    win_sound.play();
     scene = 2;
   }
 }
@@ -647,9 +659,11 @@ function foe_take_action(){
   if(foe_charging){
     let MANA_percentage = (player_MANA / player_max_MANA);
     if(MANA_percentage >= 0.5){
+      attack_sound.play();
       player_hurt(round(random(5, 8))); 
       send_text_message("The foe is misses their special attack!")
     } else {
+      strong_attack_sound.play();
       player_hurt(round(random(foe_sp_low_damage, foe_sp_high_damage)));
       send_text_message("The foe lands their special attack!")
     }
@@ -657,6 +671,7 @@ function foe_take_action(){
   } else {
     let picked_action = random(1, 100);  
     if(picked_action > 40){
+      attack_sound.play();
       if(player_block){
         player_hurt(round(random(foe_low_blo_damage, foe_high_blo_damage))); 
       } else {
@@ -752,6 +767,7 @@ foe_thinking_counter = 0;
 function press_atk(){
   foe_hurt(round(random(20, 30)));
   player_change_MA(-10);
+  attack_sound.play();
   hide_buttons = true;
   player_attacked = true;
   send_text_message("You attack the foe, and regain some MANA!");
@@ -761,6 +777,7 @@ function press_atk(){
 function press_blo(){
   player_change_MA(-30);
   send_text_message("You block the foes next attack, and regain a lot of MANA!");
+  block_sound.play();
   player_block = true;
   block_active = true;
   hide_buttons = true;
@@ -773,6 +790,7 @@ function press_ex_atk(){
     hide_buttons = true;
     foe_hurt(round(random(60, 100)));
     send_text_message("You special attack the foe!");
+    strong_attack_sound.play();
     last_button = 3;
   } else {
     send_text_message("You don't have enough MANA...");    
@@ -781,6 +799,7 @@ function press_ex_atk(){
 
 function press_heal(){
   if(player_change_MA(30)){
+    heal_sound.play();
     hide_buttons = true;
     block_active = true;
     player_hurt(round(random(-25, -35)));
