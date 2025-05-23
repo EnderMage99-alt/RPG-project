@@ -139,6 +139,7 @@ var img_y_max = 92
 var hurt_counter = 255
 
 var seeking_button = -1;
+var music_on = false
 
 // Load the image.
 function preload() {
@@ -175,12 +176,15 @@ function preload() {
   win_sound = loadSound('/sound_effects/combat_win.mp3');
   lose_sound = loadSound('/sound_effects/combat_loss.mp3');
   background_sound = loadSound('/sound_effects/background_music.mp3');
+  easy_combat_sound = loadSound('/sound_effects/easy-bosses_better.mp3');
+  hard_combat_sound = loadSound('/sound_effects/hard_boss.mp3');
+  hidden_combat_sound = loadSound('/sound_effects/hidden_boss.mp3');  
   
 }
 
 function draw() {
   background(220);
-    if(button_block_active){
+  if(button_block_active){
         console.log('button_block_active is active');
       button_counter++
       if(button_counter >= button_delay){
@@ -189,6 +193,14 @@ function draw() {
       }
     }
   if(scene == 0){
+    if(!music_on){
+      music_on = true
+      background_sound.setLoop(true)
+      easy_combat_sound.setLoop(true)
+      hard_combat_sound.setLoop(true)
+      hidden_combat_sound.setLoop(true)
+      background_sound.play()
+    }
       image(bg_img_menu, 0, 0, 600, 400);
       easy_button();
       medium_button();
@@ -247,6 +259,8 @@ function draw() {
           scene = 1;
           last_scene = 1;
           restart_battle();
+          background_music_off();
+          easy_music_on();
         }
       }
       if(mouseIsPressed) {
@@ -264,6 +278,8 @@ function draw() {
           icon_used = 3
           scene = 1;
           restart_battle();
+          background_music_off();
+          hard_music_on();
         }
       }
       if(mouseIsPressed) {
@@ -279,6 +295,8 @@ function draw() {
             foe_sp_high_damage = 60
             scene = 1;
             restart_battle();
+            background_music_off();
+            easy_music_on();
         }
       }
       if(foe_1_defeated && foe_2_defeated && foe_3_defeated){
@@ -297,7 +315,9 @@ function draw() {
             foe_sp_high_damage = 60
             scene = 1;
             restart_battle();
+            background_music_off();
             send_text_message("You are ambushed by ???");
+            hidden_music_on();
         }
       }
     }
@@ -419,6 +439,7 @@ function draw() {
            mouseY > battle_but_y && mouseY < battle_but_y + battle_but_h && !button_block_active){
             button_block_active = true;
             scene = 3;
+            background_music_on()
         }
       }
     }
@@ -529,6 +550,7 @@ function update_player_HP(){
   if(player_hb_x == 0){
     lose_sound.play();
     scene = 3;
+    background_music_on()
   }
   
   rect(100, 300, player_hb_x, 30); //Player HP bar
@@ -652,6 +674,7 @@ function update_foe_HP(){
     }
     win_sound.play();
     scene = 2;
+    background_music_on();
   }
 }
   
@@ -908,6 +931,40 @@ function exit_battle_button(){
   textSize(22);
   text('X', battle_but_x + 13, battle_but_y + 29);
   menu_but = true
+}
+ 
+function background_music_off(){
+  music_on = false
+  background_sound.stop()
+}
+
+function background_music_on(){
+  music_on = true
+  background_sound.play()
+  easy_combat_sound.stop()
+  hard_combat_sound.stop()
+  hidden_combat_sound.stop()
+}
+
+function easy_music_on(){
+  background_sound.stop()
+  easy_combat_sound.play()
+  hard_combat_sound.stop()
+  hidden_combat_sound.stop()
+}
+
+function hard_music_on(){
+  background_sound.stop()
+  easy_combat_sound.stop()
+  hard_combat_sound.play()
+  hidden_combat_sound.stop()
+}
+
+function hidden_music_on(){
+  background_sound.stop()
+  easy_combat_sound.stop()
+  hard_combat_sound.stop()
+  hidden_combat_sound.play()
 }
   
 function restart_battle(){
